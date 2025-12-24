@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Garante que o html e body ocupem a altura total para o h-screen funcionar bem */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc; /* O mesmo tom do slate-50 para evitar flashes brancos */
+}
