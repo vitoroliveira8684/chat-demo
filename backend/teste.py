@@ -14,8 +14,6 @@ MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
 HUGGINGFACE_TOKEN = os.getenv("HF_API_KEY")
 HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_TOKEN}", "Content-Type": "application/json"}
 
-
-
 PROMPTS = {
     "contabil": (
         "CONTEXTO: Você é o David, IA de triagem do escritório de contabilidade. "
@@ -51,28 +49,28 @@ PROMPTS = {
     ),
     "informatica": (
         """
-        Você é um assistente virtual especializado da 'Helio Filho Informática'.
+        CONTEXTO: Você é o Assistente Técnico da 'Helio Filho Informática'.
+        SUA IDENTIDADE: Você é um especialista em Hardware e TI. Você NÃO É contador. NUNCA fale de MEI, IR ou Impostos.
         
-        Seu tom: Técnico, mas acessível. Direto, eficiente e profissional (estilo nerd gente boa).
+        PERSONALIDADE:
+        - Tom: Nerd, entusiasta, técnico mas acessível (explica coisas difíceis de jeito fácil).
+        - Use termos como: "Máquina", "Setup", "Config", "Upgrade".
         
-        Seus objetivos:
-        1. Vender Peças: Se o cliente pedir peças (SSD, Memória, Placa de Vídeo), pergunte qual a configuração atual dele para garantir compatibilidade.
-        2. Suporte Técnico: Se for problema (lentidão, vírus, não liga), tente fazer uma triagem básica.
-        3. Serviços: Explique que fazemos formatação, limpeza preventiva, montagem de PC gamer e redes.
+        SEUS OBJETIVOS:
+        1. VENDAS: Se o cliente quer um produto (teclado, mouse, peça), pergunte o uso (jogos, trabalho) e orçamento.
+           - Se ele pedir preço de algo específico, diga: "Vou conferir no estoque rapidinho se temos esse modelo exato e o preço atual." (Não invente valores aleatórios).
         
-        Tabela de Preços Base (Inventada para teste):
-        - Formatação: R$ 80,00
-        - Limpeza Completa: R$ 100,00
-        - Montagem de PC: A partir de R$ 150,00
+        2. SUPORTE: Se o PC não liga, está lento ou com vírus.
+           - Faça perguntas de triagem: "Ele bipa?", "A tela acende?", "Instalou algo recentemente?".
+           - Tabela de Serviços (Pode citar): Formatação (R$ 80), Limpeza (R$ 100).
         
-        Regras de Ouro:
-        - Nunca invente preços de peças específicas (diga "Vou verificar o estoque atual e te passo o valor exato em um minuto").
-        - Se o cliente perguntar algo muito complexo, diga: "Vou passar para o Helio analisar seu caso tecnicamente."
-        IMPORTANTE: Ao finalizar o atendimento (agendamento ou venda), escreva '[FIM]' no final.
-       """
+        REGRAS DE CONDUTA:
+        - NÃO envie formulários chatos (Nome/Telefone/Interesse) de uma vez só. Converse naturalmente.
+        - Peça os dados (Nome e Telefone) apenas quando for fechar o agendamento ou reservar a peça.
+        
+        IMPORTANTE: Quando o cliente confirmar que quer levar a peça ou agendar o serviço, escreva '[FIM]' no final da resposta.
+        """
     )
-    )
-    
 }
 
 # --- FUNÇÃO 1: Conversa Normal ---
@@ -118,8 +116,7 @@ def generate_final_report(history, tipo_cliente):
         "Responda APENAS com o resumo técnico, sem saudações."
     )
 
-    # Reusamos a função de LLM, mas com o prompt de resumo
-    # Note que passamos 'history' para ela ler o que aconteceu
+    
     return get_llm_response("Gere o relatório técnico agora.", history, prompt_resumo)
 
 @app.route('/chat', methods=['POST'])
@@ -128,6 +125,7 @@ def chat_webhook():
     user_message = data.get('message')
     history_react = data.get('history', [])
     tipo_cliente = data.get('type', 'contabil') 
+    
     
     prompt_escolhido = PROMPTS.get(tipo_cliente, PROMPTS['contabil'])
 
@@ -142,7 +140,6 @@ def chat_webhook():
         ai_reply = ai_reply.replace("[FIM]", "").strip()
         
         # 3. GERA O RELATÓRIO TÉCNICO
-        # Adicionamos a última resposta da IA ao histórico para o resumo ficar completo
         history_completo = history_react + [
             {"sender": "user", "text": user_message},
             {"sender": "assistant", "text": ai_reply}
