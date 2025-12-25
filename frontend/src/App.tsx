@@ -39,7 +39,14 @@ const SECTORS_CONFIG: Record<string, { id: string; name: string; sub: string; co
     sub: 'Reservas e Menu',
     color: 'bg-green-700',
     welcome: 'Buonasera! Bem-vindo ao Bella Italia. Gostaria de fazer uma reserva?'
-  }
+  },
+    informatica: {
+    id: 'informatica',
+    name: 'Helio Filho Informática',
+    sub: 'Suporte e Hardware',
+    color: 'bg-indigo-600',
+    welcome: 'Olá! Bem-vindo à Helio Filho Informática. 💻 Precisa de assistência técnica, peças ou um upgrade no PC?'
+  },
 };
 
 export default function App() {
